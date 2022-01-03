@@ -14,20 +14,16 @@ ForEachMacros:
   - list_for_each_safe
   - for_each_cpu
 IncludeCategories:
-  - Regex:           '^<radix/.*\.h>'
+  - Regex:           '^<rlibc/.*\.h>'
     Priority:        1
     SortPriority:    0
     CaseSensitive:   false
-  - Regex:           '^<rlibc/.*\.h>'
+  - Regex:           '^<.*\.h>'
     Priority:        2
     SortPriority:    0
     CaseSensitive:   false
-  - Regex:           '^<.*\.h>'
-    Priority:        3
-    SortPriority:    0
-    CaseSensitive:   false
   - Regex:           '.*'
-    Priority:        4
+    Priority:        3
     SortPriority:    0
 IndentCaseLabels: false
 IndentWidth: 4

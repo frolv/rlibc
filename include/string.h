@@ -6,13 +6,18 @@
 #ifndef RLIBC_STRING_H
 #define RLIBC_STRING_H
 
-#if __cplusplus
+#include <rlibc.h>
+#include <stddef.h>
+
+#ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
+void *memcpy(void *restrict dst, const void *restrict src, size_t n);
+
 int strcmp(const char *s1, const char *s2);
 
-#if __cplusplus
+#ifdef __cplusplus
 }
 #endif  // __cplusplus
 
