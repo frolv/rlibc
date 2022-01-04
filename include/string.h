@@ -17,6 +17,9 @@ void *memcpy(void *restrict dst, const void *restrict src, size_t n);
 
 int strcmp(const char *s1, const char *s2);
 
+size_t strlen(const char *s);
+size_t strnlen(const char *s, size_t maxlen);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
