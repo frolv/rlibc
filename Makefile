@@ -12,6 +12,10 @@ endif
 CC := $(TOOLCHAIN_PREFIX)-gcc
 AR := $(TOOLCHAIN_PREFIX)-ar
 
+# Tools used to compile code for unit tests, which run on the host machine.
+TEST_CC ?= gcc
+TEST_LD ?= ld
+
 RM := rm -f
 
 BUILD_DIR := build
@@ -38,6 +42,9 @@ LIBC_BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(LIBC_DIRS))
 LIBK_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.k.o,$(LIBC_SRCS))
 LIBK_BIN := $(BUILD_DIR)/libk.a
 
+TEST_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.test.o,$(LIBC_SRCS))
+TEST_BIN := $(BUILD_DIR)/test_rlibc.so
+
 # The final binary files to produce.
 BINS := libc.a
 
@@ -46,7 +53,7 @@ BINS := $(addprefix $(BUILD_DIR)/,$(BINS))
 all: build-libs
 
 .PHONY: clean
-clean: clean-libs
+clean: clean-libs clean-tests
 
 .PHONY: build-libs
 build-libs: build-dirs
@@ -55,6 +62,10 @@ build-libs: build-dirs
 .PHONY: build-libk
 build-libk: build-dirs
 	@$(MAKE) --no-print-directory libk
+
+.PHONY: test-lib
+test-lib: build-dirs
+	@$(MAKE) --no-print-directory $(TEST_BIN)
 
 .PHONY: libs
 libs: $(BINS)
@@ -71,6 +82,9 @@ $(BUILD_DIR)/libc.a: $(LIBC_OBJS)
 $(LIBK_BIN): $(LIBK_OBJS)
 	$(AR) rcs $@ $^
 
+$(TEST_BIN): $(TEST_OBJS)
+	$(TEST_LD) -shared -o $@ $^
+
 $(BUILD_DIR):
 	mkdir -p $@
 
@@ -83,6 +97,9 @@ $(BUILD_DIR)/%.o: %.c
 $(BUILD_DIR)/%.k.o: %.c
 	$(CC) -c $< -o $@ $(CPPFLAGS) $(CFLAGS) $(LIBK_FLAGS)
 
+$(BUILD_DIR)/%.test.o: %.c
+	$(TEST_CC) -c $< -o $@ $(CPPFLAGS) $(CFLAGS) -fPIC
+
 clean-libs:
 	$(RM) $(LIBC_OBJS)
 	$(RM) $(BINS)
@@ -90,3 +107,7 @@ clean-libs:
 clean-libk:
 	$(RM) $(LIBK_OBJS)
 	$(RM) $(LIBK_BIN)
+
+clean-tests:
+	$(RM) $(TEST_OBJS)
+	$(RM) $(TEST_BIN)
