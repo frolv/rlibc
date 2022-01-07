@@ -2,7 +2,7 @@
 #
 # Use of this source code is governed by an MIT-style license
 # that can be found in the LICENSE file in the repository root.
-"""Tests rlibc's implmentation of <string.h> functions."""
+"""Unit test helpers for rlibc."""
 
 import ctypes
 from pathlib import Path
