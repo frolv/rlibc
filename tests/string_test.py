@@ -12,6 +12,36 @@ import unittest
 from rlibc_test import RlibcTest
 
 
+class MemcmpTest(RlibcTest):
+    """Tests the memcmp() function."""
+
+    def test_equal(self):
+        self.assertEqual(self._rlibc.memcmp(b'\xef', b'\xef', 1), 0)
+        self.assertEqual(self._rlibc.memcmp(b'abcdefgh', b'abcdefgh', 4), 0)
+        self.assertEqual(self._rlibc.memcmp(b'abcdefgh', b'abcdefgh', 8), 0)
+        self.assertEqual(self._rlibc.memcmp(b'0' * 1024, b'0' * 1024, 1024), 0)
+        self.assertEqual(
+            self._rlibc.memcmp(b'\x00\x00\x00\x00\x00',
+                               b'\x00\x00\x00\x00\x01', 4), 0)
+
+    def test_less_than(self):
+        self.assertLess(self._rlibc.memcmp(b'1', b'2', 1), 0)
+        self.assertLess(
+            self._rlibc.memcmp(b'\x00\x00\x00\x00\x00',
+                               b'\x00\x00\x00\x00\x01', 5), 0)
+
+    def test_greater_than(self):
+        self.assertGreater(self._rlibc.memcmp(b'\xff', b'\x30'), 0)
+        self.assertGreater(
+            self._rlibc.memcmp(b'\x00\x00\x00\x00\x01',
+                               b'\x00\x00\x00\x00\x00', 5), 0)
+
+    def test_zero(self):
+        self.assertEqual(self._rlibc.memcmp(b'', b'', 0), 0)
+        self.assertEqual(
+            self._rlibc.memcmp(b'\x01\x02\x03', b'\x01\x02\x03', 0), 0)
+
+
 class MemcpyTest(RlibcTest):
     """Tests the memcpy() function."""
 
@@ -41,34 +71,34 @@ class MemcpyTest(RlibcTest):
         self.assertEqual(dst.value, src.value)
 
 
-class MemcmpTest(RlibcTest):
-    """Tests the memcmp() function."""
+class MemsetTest(RlibcTest):
+    """Tests the memset() function."""
 
-    def test_equal(self):
-        self.assertEqual(self._rlibc.memcmp(b'\xef', b'\xef', 1), 0)
-        self.assertEqual(self._rlibc.memcmp(b'abcdefgh', b'abcdefgh', 4), 0)
-        self.assertEqual(self._rlibc.memcmp(b'abcdefgh', b'abcdefgh', 8), 0)
-        self.assertEqual(self._rlibc.memcmp(b'0' * 1024, b'0' * 1024, 1024), 0)
-        self.assertEqual(
-            self._rlibc.memcmp(b'\x00\x00\x00\x00\x00',
-                               b'\x00\x00\x00\x00\x01', 4), 0)
+    def test_small(self):
+        buffer = ctypes.create_string_buffer(
+            b'\xff\xff\xff\xff\xff\xff\xff\xff', 8)
+        self._rlibc.memset(buffer, 0, len(buffer))
+        self.assertEqual(buffer.raw, b'\x00\x00\x00\x00\x00\x00\x00\x00')
 
-    def test_less_than(self):
-        self.assertLess(self._rlibc.memcmp(b'1', b'2', 1), 0)
-        self.assertLess(
-            self._rlibc.memcmp(b'\x00\x00\x00\x00\x00',
-                               b'\x00\x00\x00\x00\x01', 5), 0)
+    def test_large(self):
+        large_size = 2**22  # 4 MiB
+        buffer = ctypes.create_string_buffer(b'\xff' * large_size, large_size)
+        self._rlibc.memset(buffer, 0, len(buffer))
+        self.assertEqual(buffer.raw, b'\x00' * large_size)
 
-    def test_greater_than(self):
-        self.assertGreater(self._rlibc.memcmp(b'\xff', b'\x30'), 0)
-        self.assertGreater(
-            self._rlibc.memcmp(b'\x00\x00\x00\x00\x01',
-                               b'\x00\x00\x00\x00\x00', 5), 0)
+    def test_partial(self):
+        buffer = ctypes.create_string_buffer(b'\xff' * 128, 128)
+        start = ctypes.c_void_p(ctypes.addressof(buffer) + 32)
+        self._rlibc.memset(start, 0xaa, 64)
+        self.assertEqual(buffer.raw,
+                         b'\xff' * 32 + b'\xaa' * 64 + b'\xff' * 32)
 
-    def test_zero(self):
-        self.assertEqual(self._rlibc.memcmp(b'', b'', 0), 0)
-        self.assertEqual(
-            self._rlibc.memcmp(b'\x01\x02\x03', b'\x01\x02\x03', 0), 0)
+    def test_unaligned(self):
+        # Start setting from a non word-aligned offset in the buffer.
+        buffer = ctypes.create_string_buffer(b'\xff' * 128, 128)
+        start = ctypes.c_void_p(ctypes.addressof(buffer) + 5)
+        self._rlibc.memset(start, 0, len(buffer) - 5)
+        self.assertEqual(buffer.raw, b'\xff' * 5 + b'\x00' * 123)
 
 
 class StrcmpTest(RlibcTest):

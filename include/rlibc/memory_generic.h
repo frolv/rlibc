@@ -24,7 +24,9 @@ extern "C" {
 #define __RLIBC_HAS_COPY_BYTES_FWD 1
 
 // Copies n bytes from src to dst in ascending order.
-static inline void __rc_copy_bytes_fwd(uint8_t *dst, const uint8_t *src, size_t n)
+static inline void __rc_copy_bytes_fwd(uint8_t *dst,
+                                       const uint8_t *src,
+                                       size_t n)
 {
     while (n > 0) {
         *dst++ = *src++;
@@ -33,6 +35,20 @@ static inline void __rc_copy_bytes_fwd(uint8_t *dst, const uint8_t *src, size_t 
 }
 
 #endif  // defined(__RLIBC_GENERIC_COPY_BYTES_FWD)
+
+#if defined(__RLIBC_GENERIC_SET_BYTES)
+#define __RLIBC_HAS_SET_BYTES 1
+
+// Sets n bytes starting from dst to the value c.
+static inline void __rc_set_bytes(uint8_t *dst, uint8_t c, size_t n)
+{
+    while (n > 0) {
+        *dst++ = c;
+        --n;
+    }
+}
+
+#endif  // defined(__RLIBC_GENERIC_SET_BYTES)
 
 #ifdef __cplusplus
 }

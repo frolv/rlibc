@@ -13,7 +13,8 @@
 extern "C" {
 #endif  // __cplusplus
 
-void *memcpy(void *restrict dst, const void *restrict src, size_t n);
+void *memcpy(void *__restrict dst, const void *__restrict src, size_t n);
+void *memset(void *dst, int c, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
 
 int strcmp(const char *s1, const char *s2);
