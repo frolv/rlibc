@@ -33,7 +33,7 @@ RADIX_FLAGS ?=
 LIBK_FLAGS := -D__radix_kernel__ $(RADIX_FLAGS)
 
 # Source directories for libc.
-LIBC_DIRS := string
+LIBC_DIRS := ctype string
 
 LIBC_SRCS := $(foreach dir,$(LIBC_DIRS),$(wildcard $(dir)/*.c))
 LIBC_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(LIBC_SRCS))
@@ -44,6 +44,7 @@ LIBK_BIN := $(BUILD_DIR)/libk.a
 
 TEST_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.test.o,$(LIBC_SRCS))
 TEST_BIN := $(BUILD_DIR)/test_rlibc.so
+TEST_LDFLAGS := -shared -Bsymbolic -z nodefaultlib
 
 # The final binary files to produce.
 BINS := libc.a
@@ -83,7 +84,7 @@ $(LIBK_BIN): $(LIBK_OBJS)
 	$(AR) rcs $@ $^
 
 $(TEST_BIN): $(TEST_OBJS)
-	$(TEST_LD) -shared -o $@ $^
+	$(TEST_LD) $(TEST_LDFLAGS) -o $@ $^
 
 $(BUILD_DIR):
 	mkdir -p $@
