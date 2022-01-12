@@ -172,5 +172,26 @@ class StrnlenTest(RlibcTest):
         self.assertEqual(self._rlibc.strnlen(b'', 0), 0)
 
 
+class StrrevTest(RlibcTest):
+    """Tests the strrev() function."""
+
+    def setUp(self):
+        self._rlibc.strrev.restype = ctypes.c_char_p
+
+    def test_simple(self):
+        self.assertEqual(self._rlibc.strrev(b'a'), b'a')
+        self.assertEqual(self._rlibc.strrev(b'01'), b'10')
+        self.assertEqual(self._rlibc.strrev(b'foobar'), b'raboof')
+        self.assertEqual(self._rlibc.strrev(b'racecar'), b'racecar')
+        self.assertEqual(self._rlibc.strrev(b'hello\0world'), b'olleh')
+
+    def test_long(self):
+        string = b'a' * 4096 + b'b' * 4096
+        self.assertEqual(self._rlibc.strrev(string), b'b' * 4096 + b'a' * 4096)
+
+    def test_empty(self):
+        self.assertEqual(self._rlibc.strrev(b''), b'')
+
+
 if __name__ == '__main__':
     unittest.main()
