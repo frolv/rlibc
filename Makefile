@@ -33,7 +33,7 @@ RADIX_FLAGS ?=
 LIBK_FLAGS := -D__radix_kernel__ $(RADIX_FLAGS)
 
 # Source directories for libc.
-LIBC_DIRS := ctype string
+LIBC_DIRS := ctype stdio string
 
 LIBC_SRCS := $(foreach dir,$(LIBC_DIRS),$(wildcard $(dir)/*.c))
 LIBC_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(LIBC_SRCS))
