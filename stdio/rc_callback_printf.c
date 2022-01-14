@@ -21,15 +21,15 @@ enum format_type {
     FORMAT_PERCENT,
 };
 
-#define FLAGS_LOWER     (1 << 0)  // Use lowercase hex formatting.
-#define FLAGS_SHORT     (1 << 1)  // Format a short int.
-#define FLAGS_LONG      (1 << 2)  // Format a long int.
-#define FLAGS_LONG_LONG (1 << 3)  // Format a long long int.
-#define FLAGS_ZERO      (1 << 4)  // Zero-pad a formatted number.
-#define FLAGS_SPECIAL   (1 << 5)  // Add special characters.
-#define FLAGS_LADJUST   (1 << 6)  // Left-adjust a padded value.
-#define FLAGS_SPACE     (1 << 7)  // Leave a space before a positive number.
-#define FLAGS_SIGN      (1 << 8)  // Always place a sign before a number.
+#define FLAGS_ZERO      (1 << 0)  // Zero-pad a formatted number.
+#define FLAGS_SPECIAL   (1 << 1)  // Add special characters.
+#define FLAGS_LADJUST   (1 << 2)  // Left-adjust a padded value.
+#define FLAGS_SPACE     (1 << 3)  // Leave a space before a nonnegative number.
+#define FLAGS_SIGN      (1 << 4)  // Always place a sign before a number.
+#define FLAGS_LOWER     (1 << 5)  // Use lowercase hex formatting.
+#define FLAGS_SHORT     (1 << 6)  // Format a short int.
+#define FLAGS_LONG      (1 << 7)  // Format a long int.
+#define FLAGS_LONG_LONG (1 << 8)  // Format a long long int.
 
 struct printf_format {
     enum format_type type;
@@ -109,12 +109,35 @@ static int parse_format_sequence(const char *format, struct printf_format *p)
         p->precision = atoi_skip(&format);
     }
 
+    // Next are optional length modifiers.
+    switch (*format) {
+    case 'h':
+        p->flags |= FLAGS_SHORT;
+        ++format;
+        break;
+
+    case 'l':
+        p->flags |= FLAGS_LONG;
+        ++format;
+        if (*format == 'l') {
+            p->flags |= FLAGS_LONG_LONG;
+            ++format;
+        }
+        break;
+
+    default:
+        break;
+    }
+
     switch (*format) {
     case 'c':
         p->type = FORMAT_CHAR;
         break;
     case 's':
         p->type = FORMAT_STRING;
+        break;
+    case 'd':
+        p->type = FORMAT_INT;
         break;
     default:
         return -1;
@@ -124,14 +147,17 @@ static int parse_format_sequence(const char *format, struct printf_format *p)
     return format - start;
 }
 
-static size_t pad_spaces(printf_callback callback, void *context, size_t amount)
+static size_t pad_chars(printf_callback callback,
+                        void *context,
+                        char c,
+                        size_t amount)
 {
     char buffer[128];
     size_t total_size = 0;
 
     while (amount > 0) {
         size_t curr_size = min(amount, sizeof buffer);
-        memset(buffer, ' ', curr_size);
+        memset(buffer, c, curr_size);
         total_size += callback(context, buffer, curr_size);
         amount -= curr_size;
     }
@@ -151,7 +177,7 @@ static int format_char(printf_callback callback,
     }
 
     if (p->width > 1) {
-        size += pad_spaces(callback, context, p->width - 1);
+        size += pad_chars(callback, context, ' ', p->width - 1);
     }
 
     if (!(p->flags & FLAGS_LADJUST)) {
@@ -182,7 +208,7 @@ static int format_string(printf_callback callback,
     }
 
     if (p->width > (int)len) {
-        size += pad_spaces(callback, context, p->width - len);
+        size += pad_chars(callback, context, ' ', p->width - len);
     }
 
     if (!(p->flags & FLAGS_LADJUST)) {
@@ -191,6 +217,101 @@ static int format_string(printf_callback callback,
 
     return size;
 }
+
+static size_t print_number(printf_callback callback,
+                           void *context,
+                           char sign,
+                           int zeros,
+                           const char *number_buffer,
+                           size_t number_length)
+{
+    size_t size = 0;
+
+    if (sign != '\0') {
+        size += callback(context, &sign, 1);
+    }
+
+    if (zeros > 0) {
+        size += pad_chars(callback, context, '0', zeros);
+    }
+
+    size += callback(context, number_buffer, number_length);
+    return size;
+}
+
+static int format_int(printf_callback callback,
+                      void *context,
+                      int64_t value,
+                      const struct printf_format *p)
+{
+    char sign = '\0';
+
+    if (value < 0) {
+        sign = '-';
+        if (value != INT64_MIN) {
+            value = -value;
+        }
+    } else if (p->flags & FLAGS_SIGN) {
+        sign = '+';
+    } else if (p->flags & FLAGS_SPACE) {
+        sign = ' ';
+    }
+
+    char buffer[32];
+    char *pos = buffer;
+    uint64_t uvalue = value;
+
+    do {
+        *pos++ = '0' + (uvalue % 10);
+        uvalue /= 10;
+    } while (uvalue > 0);
+
+    *pos = '\0';
+    strrev(buffer);
+
+    size_t value_size = pos - buffer;
+    size_t zeros_to_pad =
+        p->precision > (int)value_size ? p->precision - value_size : 0;
+    size_t total_size = value_size + zeros_to_pad + (sign == '\0' ? 0 : 1);
+
+    // If both '0' and '-' flags are provided, left-adjust takes precedence.
+    if ((p->flags & (FLAGS_ZERO | FLAGS_LADJUST)) == FLAGS_ZERO) {
+        // If the width is to be zero-padded, a sign must come before all of the
+        // zeros (precision and width).
+        if ((int)total_size < p->width) {
+            zeros_to_pad += p->width - total_size;
+        }
+
+        return print_number(
+            callback, context, sign, zeros_to_pad, buffer, value_size);
+    }
+
+    size_t size = 0;
+
+    if (p->flags & FLAGS_LADJUST) {
+        size += print_number(
+            callback, context, sign, zeros_to_pad, buffer, value_size);
+    }
+
+    if (p->width > (int)total_size) {
+        size += pad_chars(callback, context, ' ', p->width - total_size);
+    }
+
+    if (!(p->flags & FLAGS_LADJUST)) {
+        size += print_number(
+            callback, context, sign, zeros_to_pad, buffer, value_size);
+    }
+
+    return size;
+}
+
+#define VA_SIGNED_INT(ap, printf)                                    \
+    ({                                                               \
+        ((printf)->flags & FLAGS_LONG_LONG) ? va_arg(ap, long long)  \
+        : ((printf)->flags & FLAGS_LONG)    ? va_arg(ap, long)       \
+        : ((printf)->flags & FLAGS_SHORT)   ? (short)va_arg(ap, int) \
+                                            : va_arg(ap, int);         \
+    })
 
 int rc_callback_printf(printf_callback callback,
                        void *context,
@@ -230,6 +351,9 @@ int rc_callback_printf(printf_callback callback,
             break;
 
         case FORMAT_INT:
+            n += format_int(callback, context, VA_SIGNED_INT(ap, &p), &p);
+            break;
+
         case FORMAT_UINT:
             break;
 
