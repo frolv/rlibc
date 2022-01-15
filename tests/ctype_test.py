@@ -56,11 +56,11 @@ class IsdigitTest(RlibcTest):
 class IslowerTest(RlibcTest):
     """Tests the islower() function."""
 
-    def test_upper(self):
+    def test_lower(self):
         for c in string.ascii_lowercase:
             self.assertTrue(bool(self._rlibc.islower(ord(c))))
 
-    def test_nonupper(self):
+    def test_nonlower(self):
         for c in _exclude_chars(string.ascii_lowercase):
             self.assertFalse(bool(self._rlibc.islower(c)))
 
@@ -68,13 +68,37 @@ class IslowerTest(RlibcTest):
 class IsupperTest(RlibcTest):
     """Tests the isupper() function."""
 
-    def test_lower(self):
+    def test_upper(self):
         for c in string.ascii_uppercase:
             self.assertTrue(bool(self._rlibc.isupper(ord(c))))
 
-    def test_nonlower(self):
+    def test_nonupper(self):
         for c in _exclude_chars(string.ascii_uppercase):
             self.assertFalse(bool(self._rlibc.isupper(c)))
+
+
+class TolowerTest(RlibcTest):
+    """Tests the tolower() function."""
+
+    def test_upper(self):
+        for u, l in zip(string.ascii_uppercase, string.ascii_lowercase):
+            self.assertEqual(self._rlibc.tolower(ord(u)), ord(l))
+
+    def test_nonupper(self):
+        for c in _exclude_chars(string.ascii_uppercase):
+            self.assertEqual(self._rlibc.tolower(c), c)
+
+
+class ToUpperTest(RlibcTest):
+    """Tests the toupper() function."""
+
+    def test_lower(self):
+        for u, l in zip(string.ascii_uppercase, string.ascii_lowercase):
+            self.assertEqual(self._rlibc.toupper(ord(l)), ord(u))
+
+    def test_nonlower(self):
+        for c in _exclude_chars(string.ascii_lowercase):
+            self.assertEqual(self._rlibc.toupper(c), c)
 
 
 if __name__ == '__main__':
