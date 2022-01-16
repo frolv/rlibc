@@ -280,7 +280,190 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(self._format('%-+01024.8d', 123456, bufsize=2048),
                          (1024, '+00123456' + ' ' * 1015))
 
-    def test_format_short_int_limits(self):
+    def test_format_unsigned(self):
+        self.assertEqual(self._format('%u', 0), (1, '0'))
+        self.assertEqual(self._format('%u', 7), (1, '7'))
+        self.assertEqual(self._format('%u', 1234567), (7, '1234567'))
+        self.assertEqual(self._format('%u', 2**28), (9, '268435456'))
+        self.assertEqual(self._format('%u + %u = %u', 11, 27, 11 + 27),
+                         (12, '11 + 27 = 38'))
+
+    def test_format_unsigned_flags(self):
+        # Space and sign flags have no effect on unsigned values.
+        self.assertEqual(self._format('% u', 0), (1, '0'))
+        self.assertEqual(self._format('% u', 144), (3, '144'))
+        self.assertEqual(self._format('%+u', 0), (1, '0'))
+        self.assertEqual(self._format('%+u', 144), (3, '144'))
+        self.assertEqual(self._format('% +u', 0), (1, '0'))
+        self.assertEqual(self._format('% +u', 144), (3, '144'))
+
+    def test_format_unsigned_precision(self):
+        self.assertEqual(self._format('%.u', 8675309), (7, '8675309'))
+        self.assertEqual(self._format('%.4u', 8675309), (7, '8675309'))
+        self.assertEqual(self._format('%.10u', 8675309), (10, '0008675309'))
+        self.assertEqual(self._format('%.u', 0), (1, '0'))
+        self.assertEqual(self._format('%.1u', 0), (1, '0'))
+        self.assertEqual(self._format('%.2u', 0), (2, '00'))
+        self.assertEqual(self._format('%.1024u', 13, bufsize=2048),
+                         (1024, '0' * 1022 + '13'))
+
+    def test_format_unsigned_width(self):
+        self.assertEqual(self._format('%2u', 4), (2, ' 4'))
+        self.assertEqual(self._format('%8.u', 22), (8, '      22'))
+        self.assertEqual(self._format('%8.4u', 22), (8, '    0022'))
+        self.assertEqual(self._format('%1024.8u', 123456, bufsize=2048),
+                         (1024, ' ' * 1016 + '00123456'))
+
+    def test_format_unsigned_width_ladjust(self):
+        self.assertEqual(self._format('%-2u', 4), (2, '4 '))
+        self.assertEqual(self._format('%-8.u', 22), (8, '22      '))
+        self.assertEqual(self._format('%-8.4u', 22), (8, '0022    '))
+        self.assertEqual(self._format('%-1024.8u', 123456, bufsize=2048),
+                         (1024, '00123456' + ' ' * 1016))
+
+    def test_format_unsigned_width_zero(self):
+        self.assertEqual(self._format('%02d', 4), (2, '04'))
+        self.assertEqual(self._format('%06d', 11), (6, '000011'))
+        self.assertEqual(self._format('%08.d', 42), (8, '00000042'))
+        self.assertEqual(self._format('%08.8d', 42), (8, '00000042'))
+        self.assertEqual(self._format('%08.10d', 42), (10, '0000000042'))
+        self.assertEqual(self._format('%01024.8d', 123456, bufsize=2048),
+                         (1024, '0' * 1016 + '00123456'))
+
+    def test_format_octal(self):
+        self.assertEqual(self._format('%o', 0), (1, '0'))
+        self.assertEqual(self._format('%o', 12), (2, '14'))
+        self.assertEqual(self._format('%o', 1234567), (7, '4553207'))
+        self.assertEqual(self._format('%o', 2**28), (10, '2000000000'))
+        self.assertEqual(self._format('...because dec %d = oct %o', 25, 25),
+                         (26, '...because dec 25 = oct 31'))
+
+    def test_format_octal_special(self):
+        self.assertEqual(self._format('%#o', 0), (1, '0'))
+        self.assertEqual(self._format('%#o', 12), (3, '014'))
+        self.assertEqual(self._format('%#o', 1234567), (8, '04553207'))
+        self.assertEqual(self._format('%#o', 2**28), (11, '02000000000'))
+
+    def test_format_octal_precision(self):
+        self.assertEqual(self._format('%.o', 0), (1, '0'))
+        self.assertEqual(self._format('%.4o', 0), (4, '0000'))
+        self.assertEqual(self._format('%.4o', 8), (4, '0010'))
+        self.assertEqual(self._format('%.2o', 17), (2, '21'))
+        self.assertEqual(self._format('%#.2o', 17), (3, '021'))
+
+    def test_format_octal_width(self):
+        self.assertEqual(self._format('%8o', 0), (8, '       0'))
+        self.assertEqual(self._format('%8o', 8), (8, '      10'))
+        self.assertEqual(self._format('%2o', 17), (2, '21'))
+        self.assertEqual(self._format('%8.3o', 0), (8, '     000'))
+        self.assertEqual(self._format('%8.3o', 8), (8, '     010'))
+        self.assertEqual(self._format('%2.3o', 17), (3, '021'))
+        self.assertEqual(self._format('%#8.3o', 0), (8, '     000'))
+        self.assertEqual(self._format('%#8.3o', 8), (8, '     010'))
+        self.assertEqual(self._format('%#2.3o', 17), (3, '021'))
+
+    def test_format_octal_width_ladjust(self):
+        self.assertEqual(self._format('%-8o', 0), (8, '0       '))
+        self.assertEqual(self._format('%-8o', 8), (8, '10      '))
+        self.assertEqual(self._format('%-2o', 17), (2, '21'))
+        self.assertEqual(self._format('%-8.3o', 0), (8, '000     '))
+        self.assertEqual(self._format('%-8.3o', 8), (8, '010     '))
+        self.assertEqual(self._format('%-2.3o', 17), (3, '021'))
+        self.assertEqual(self._format('%#-8.3o', 0), (8, '000     '))
+        self.assertEqual(self._format('%#-8.3o', 8), (8, '010     '))
+        self.assertEqual(self._format('%#-2.3o', 17), (3, '021'))
+
+    def test_format_octal_width_zero(self):
+        self.assertEqual(self._format('%08o', 0), (8, '00000000'))
+        self.assertEqual(self._format('%08o', 8), (8, '00000010'))
+        self.assertEqual(self._format('%02o', 17), (2, '21'))
+        self.assertEqual(self._format('%08.3o', 0), (8, '00000000'))
+        self.assertEqual(self._format('%08.3o', 8), (8, '00000010'))
+        self.assertEqual(self._format('%02.3o', 17), (3, '021'))
+        self.assertEqual(self._format('%#08.3o', 0), (8, '00000000'))
+        self.assertEqual(self._format('%#08.3o', 8), (8, '00000010'))
+        self.assertEqual(self._format('%#02.3o', 17), (3, '021'))
+
+    def test_format_hex(self):
+        self.assertEqual(self._format('%x', 0), (1, '0'))
+        self.assertEqual(self._format('%x', 14), (1, 'e'))
+        self.assertEqual(self._format('%x', 16), (2, '10'))
+        self.assertEqual(self._format('%x', 0xdeadbeef), (8, 'deadbeef'))
+        self.assertEqual(self._format('%x', 2**16 - 1), (4, 'ffff'))
+
+    def test_format_hex_upper(self):
+        self.assertEqual(self._format('%X', 0), (1, '0'))
+        self.assertEqual(self._format('%X', 14), (1, 'E'))
+        self.assertEqual(self._format('%X', 16), (2, '10'))
+        self.assertEqual(self._format('%X', 0xdeadbeef), (8, 'DEADBEEF'))
+        self.assertEqual(self._format('%X', 2**16 - 1), (4, 'FFFF'))
+
+    def test_format_hex_special(self):
+        self.assertEqual(self._format('%#x', 0), (1, '0'))
+        self.assertEqual(self._format('%#x', 14), (3, '0xe'))
+        self.assertEqual(self._format('%#x', 16), (4, '0x10'))
+        self.assertEqual(self._format('%#x', 0xdeadbeef), (10, '0xdeadbeef'))
+        self.assertEqual(self._format('%#X', 14), (3, '0XE'))
+        self.assertEqual(self._format('%#X', 16), (4, '0X10'))
+        self.assertEqual(self._format('%#X', 0xdeadbeef), (10, '0XDEADBEEF'))
+
+    def test_format_hex_width(self):
+        self.assertEqual(self._format('%4x', 0), (4, '   0'))
+        self.assertEqual(self._format('%4x', 14), (4, '   e'))
+        self.assertEqual(self._format('%4x', 16), (4, '  10'))
+        self.assertEqual(self._format('%4x', 0xdeadbeef), (8, 'deadbeef'))
+        self.assertEqual(self._format('%12x', 0xdeadbeef), (12, '    deadbeef'))
+        self.assertEqual(self._format('%#4x', 0), (4, '   0'))
+        self.assertEqual(self._format('%#4x', 14), (4, ' 0xe'))
+        self.assertEqual(self._format('%#4x', 16), (4, '0x10'))
+        self.assertEqual(self._format('%#4x', 0xdeadbeef), (10, '0xdeadbeef'))
+        self.assertEqual(self._format('%#12x', 0xdeadbeef), (12, '  0xdeadbeef'))
+        self.assertEqual(self._format('%#4X', 14), (4, ' 0XE'))
+        self.assertEqual(self._format('%#4X', 16), (4, '0X10'))
+        self.assertEqual(self._format('%#4X', 0xdeadbeef), (10, '0XDEADBEEF'))
+        self.assertEqual(self._format('%#12X', 0xdeadbeef), (12, '  0XDEADBEEF'))
+
+    def test_format_hex_width_ladjust(self):
+        self.assertEqual(self._format('%-4x', 0), (4, '0   '))
+        self.assertEqual(self._format('%-4x', 14), (4, 'e   '))
+        self.assertEqual(self._format('%-4x', 16), (4, '10  '))
+        self.assertEqual(self._format('%-4x', 0xdeadbeef), (8, 'deadbeef'))
+        self.assertEqual(self._format('%-12x', 0xdeadbeef), (12, 'deadbeef    '))
+        self.assertEqual(self._format('%#-4x', 0), (4, '0   '))
+        self.assertEqual(self._format('%#-4x', 14), (4, '0xe '))
+        self.assertEqual(self._format('%#-4x', 16), (4, '0x10'))
+        self.assertEqual(self._format('%#-4x', 0xdeadbeef), (10, '0xdeadbeef'))
+        self.assertEqual(self._format('%#-12x', 0xdeadbeef), (12, '0xdeadbeef  '))
+        self.assertEqual(self._format('%#-4X', 14), (4, '0XE '))
+        self.assertEqual(self._format('%#-4X', 16), (4, '0X10'))
+        self.assertEqual(self._format('%#-4X', 0xdeadbeef), (10, '0XDEADBEEF'))
+        self.assertEqual(self._format('%#-12X', 0xdeadbeef), (12, '0XDEADBEEF  '))
+
+    def test_format_hex_width_zero(self):
+        self.assertEqual(self._format('%04x', 0), (4, '0000'))
+        self.assertEqual(self._format('%04x', 14), (4, '000e'))
+        self.assertEqual(self._format('%04x', 16), (4, '0010'))
+        self.assertEqual(self._format('%04x', 0xdeadbeef), (8, 'deadbeef'))
+        self.assertEqual(self._format('%012x', 0xdeadbeef), (12, '0000deadbeef'))
+        self.assertEqual(self._format('%#04x', 0), (4, '0000'))
+        self.assertEqual(self._format('%#04x', 14), (4, '0x0e'))
+        self.assertEqual(self._format('%#04x', 16), (4, '0x10'))
+        self.assertEqual(self._format('%#04x', 0xdeadbeef), (10, '0xdeadbeef'))
+        self.assertEqual(self._format('%#012x', 0xdeadbeef), (12, '0x00deadbeef'))
+        self.assertEqual(self._format('%#04X', 14), (4, '0X0E'))
+        self.assertEqual(self._format('%#04X', 16), (4, '0X10'))
+        self.assertEqual(self._format('%#04X', 0xdeadbeef), (10, '0XDEADBEEF'))
+        self.assertEqual(self._format('%#012X', 0xdeadbeef), (12, '0X00DEADBEEF'))
+
+    def test_format_pointer(self):
+        self.assertEqual(self._format('%p', ctypes.c_void_p(0)), (1, '0'))
+        self.assertEqual(self._format('%p', ctypes.c_void_p(0xcff02340)),
+                         (10, '0xcff02340'))
+        self.assertEqual(
+            self._format('&foo is %p', ctypes.c_void_p(0x084083f0)),
+            (17, '&foo is 0x84083f0'))
+
+    def test_format_short_limits(self):
         short_min, short_max = c_int_limits(ctypes.c_short)
         min_str, max_str = str(short_min), str(short_max)
         self.assertEqual(self._format('%hd', short_min),
@@ -288,13 +471,38 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(self._format('%hd', short_max),
                          (len(max_str), max_str))
 
+    def test_format_unsigned_short_limits(self):
+        short_min, short_max = c_int_limits(ctypes.c_ushort)
+
+        min_str, max_str = str(short_min), str(short_max)
+        self.assertEqual(self._format('%hu', short_min),
+                         (len(min_str), min_str))
+        self.assertEqual(self._format('%hu', short_max),
+                         (len(max_str), max_str))
+
+        max_hex = hex(short_max)
+        self.assertEqual(self._format('%#hx', short_min), (1, '0'))
+        self.assertEqual(self._format('%#hx', short_max),
+                         (len(max_hex), max_hex))
+
     def test_format_int_limits(self):
         int_min, int_max = c_int_limits(ctypes.c_int)
         min_str, max_str = str(int_min), str(int_max)
         self.assertEqual(self._format('%d', int_min), (len(min_str), min_str))
         self.assertEqual(self._format('%d', int_max), (len(max_str), max_str))
 
-    def test_format_long_int_limits(self):
+    def test_format_unsigned_int_limits(self):
+        int_min, int_max = c_int_limits(ctypes.c_uint)
+
+        min_str, max_str = str(int_min), str(int_max)
+        self.assertEqual(self._format('%u', int_min), (len(min_str), min_str))
+        self.assertEqual(self._format('%u', int_max), (len(max_str), max_str))
+
+        max_hex = hex(int_max)
+        self.assertEqual(self._format('%#x', int_min), (1, '0'))
+        self.assertEqual(self._format('%#x', int_max), (len(max_hex), max_hex))
+
+    def test_format_long_limits(self):
         long_min, long_max = c_int_limits(ctypes.c_long)
         min_str, max_str = str(long_min), str(long_max)
         self.assertEqual(self._format('%ld', ctypes.c_long(long_min)),
@@ -302,7 +510,22 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(self._format('%ld', ctypes.c_long(long_max)),
                          (len(max_str), max_str))
 
-    def test_format_long_long_int_limits(self):
+    def test_format_unsigned_long_limits(self):
+        long_min, long_max = c_int_limits(ctypes.c_ulong)
+
+        min_str, max_str = str(long_min), str(long_max)
+        self.assertEqual(self._format('%lu', ctypes.c_ulong(long_min)),
+                         (len(min_str), min_str))
+        self.assertEqual(self._format('%lu', ctypes.c_ulong(long_max)),
+                         (len(max_str), max_str))
+
+        max_hex = hex(long_max)
+        self.assertEqual(self._format('%#lx', ctypes.c_ulong(long_min)),
+                         (1, '0'))
+        self.assertEqual(self._format('%#lx', ctypes.c_ulong(long_max)),
+                         (len(max_hex), max_hex))
+
+    def test_format_long_long_limits(self):
         long_long_min, long_long_max = c_int_limits(ctypes.c_longlong)
         min_str, max_str = str(long_long_min), str(long_long_max)
         self.assertEqual(
@@ -311,6 +534,24 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(
             self._format('%lld', ctypes.c_longlong(long_long_max)),
             (len(max_str), max_str))
+
+    def test_format_unsigned_long_long_limits(self):
+        long_long_min, long_long_max = c_int_limits(ctypes.c_ulonglong)
+
+        min_str, max_str = str(long_long_min), str(long_long_max)
+        self.assertEqual(
+            self._format('%llu', ctypes.c_ulonglong(long_long_min)),
+            (len(min_str), min_str))
+        self.assertEqual(
+            self._format('%llu', ctypes.c_ulonglong(long_long_max)),
+            (len(max_str), max_str))
+
+        max_hex = hex(long_long_max)
+        self.assertEqual(
+            self._format('%#lx', ctypes.c_ulonglong(long_long_min)), (1, '0'))
+        self.assertEqual(
+            self._format('%#lx', ctypes.c_ulonglong(long_long_max)),
+            (len(max_hex), max_hex))
 
     def test_format_percent(self):
         self.assertEqual(self._format('loading: 10%%!'), (13, 'loading: 10%!'))

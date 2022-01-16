@@ -16,7 +16,7 @@ struct vsnprintf_context {
     size_t remaining_size;
 };
 
-size_t callback(void *ctx, const char *string, size_t size)
+static size_t callback(void *ctx, const char *string, size_t size)
 {
     struct vsnprintf_context *context = ctx;
     size_t to_write = min(size, context->remaining_size);
