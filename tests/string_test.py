@@ -128,6 +128,44 @@ class StrcmpTest(RlibcTest):
                          ['Alice', 'Bob', 'Bob', 'Carol', 'Dave', 'Eve'])
 
 
+class StrncmpTest(RlibcTest):
+    """Tests the strncmp() function."""
+
+    def test_equal(self):
+        self.assertEqual(self._rlibc.strncmp(b'', b'', 16), 0)
+        self.assertEqual(self._rlibc.strncmp(b'!', b'!', 16), 0)
+        self.assertEqual(self._rlibc.strncmp(b'strncmp', b'strncmp', 16), 0)
+        self.assertEqual(self._rlibc.strncmp(b'', b'', 0), 0)
+        self.assertEqual(self._rlibc.strncmp(b'2', b'2', 0), 0)
+        self.assertEqual(self._rlibc.strncmp(b'2', b'2', 1), 0)
+        self.assertEqual(self._rlibc.strncmp(b'abcde', b'abcdf', 4), 0)
+        self.assertEqual(self._rlibc.strncmp(b'123\x0056', b'123\x0099', 6), 0)
+
+        long = b'4' * 2048
+        self.assertEqual(self._rlibc.strncmp(long, long, 16), 0)
+        self.assertEqual(self._rlibc.strncmp(long, long, len(long)), 0)
+        self.assertEqual(self._rlibc.strncmp(long, long, len(long) + 1), 0)
+
+    def test_less_than(self):
+        self.assertLess(self._rlibc.strncmp(b'', b'\x01', 16), 0)
+        self.assertLess(self._rlibc.strncmp(b'a', b'b', 1), 0)
+        self.assertLess(self._rlibc.strncmp(b'a', b'b', 16), 0)
+        self.assertLess(self._rlibc.strncmp(b'mike', b'oscar', 16), 0)
+        self.assertLess(self._rlibc.strncmp(b'11111110', b'11111111', 8), 0)
+
+    def test_greater_than(self):
+        self.assertGreater(self._rlibc.strncmp(b' ', b'', 16), 0)
+        self.assertGreater(self._rlibc.strncmp(b'b', b'a', 1), 0)
+        self.assertGreater(self._rlibc.strncmp(b'b', b'a', 16), 0)
+        self.assertGreater(self._rlibc.strncmp(b'somebody', b'once', 4), 0)
+
+    def test_sort(self):
+        names = ['Bob', 'Dave', 'Alice', 'Eve', 'Bob', 'Carol']
+        key = functools.cmp_to_key(lambda a, b: self._rlibc.strncmp(b, a, 1))
+        self.assertEqual(sorted(names, key=key),
+                         ['Eve', 'Dave', 'Carol', 'Bob', 'Bob', 'Alice'])
+
+
 class StrlenTest(RlibcTest):
     """Tests the strlen() function."""
 
