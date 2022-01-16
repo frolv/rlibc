@@ -6,6 +6,7 @@
 #include <rlibc/util.h>
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -402,7 +403,7 @@ int rc_callback_printf(printf_callback callback,
         struct printf_format p;
         int format_size = parse_format_sequence(format, &p);
         if (format_size == -1) {
-            // errno = EINVAL;
+            errno = EINVAL;
             return -1;
         }
 
@@ -436,7 +437,7 @@ int rc_callback_printf(printf_callback callback,
         }
 
         case FORMAT_NONE:
-            // errno = EINVAL;
+            errno = EINVAL;
             return -1;
         }
 

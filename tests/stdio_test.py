@@ -412,48 +412,57 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(self._format('%4x', 14), (4, '   e'))
         self.assertEqual(self._format('%4x', 16), (4, '  10'))
         self.assertEqual(self._format('%4x', 0xdeadbeef), (8, 'deadbeef'))
-        self.assertEqual(self._format('%12x', 0xdeadbeef), (12, '    deadbeef'))
+        self.assertEqual(self._format('%12x', 0xdeadbeef),
+                         (12, '    deadbeef'))
         self.assertEqual(self._format('%#4x', 0), (4, '   0'))
         self.assertEqual(self._format('%#4x', 14), (4, ' 0xe'))
         self.assertEqual(self._format('%#4x', 16), (4, '0x10'))
         self.assertEqual(self._format('%#4x', 0xdeadbeef), (10, '0xdeadbeef'))
-        self.assertEqual(self._format('%#12x', 0xdeadbeef), (12, '  0xdeadbeef'))
+        self.assertEqual(self._format('%#12x', 0xdeadbeef),
+                         (12, '  0xdeadbeef'))
         self.assertEqual(self._format('%#4X', 14), (4, ' 0XE'))
         self.assertEqual(self._format('%#4X', 16), (4, '0X10'))
         self.assertEqual(self._format('%#4X', 0xdeadbeef), (10, '0XDEADBEEF'))
-        self.assertEqual(self._format('%#12X', 0xdeadbeef), (12, '  0XDEADBEEF'))
+        self.assertEqual(self._format('%#12X', 0xdeadbeef),
+                         (12, '  0XDEADBEEF'))
 
     def test_format_hex_width_ladjust(self):
         self.assertEqual(self._format('%-4x', 0), (4, '0   '))
         self.assertEqual(self._format('%-4x', 14), (4, 'e   '))
         self.assertEqual(self._format('%-4x', 16), (4, '10  '))
         self.assertEqual(self._format('%-4x', 0xdeadbeef), (8, 'deadbeef'))
-        self.assertEqual(self._format('%-12x', 0xdeadbeef), (12, 'deadbeef    '))
+        self.assertEqual(self._format('%-12x', 0xdeadbeef),
+                         (12, 'deadbeef    '))
         self.assertEqual(self._format('%#-4x', 0), (4, '0   '))
         self.assertEqual(self._format('%#-4x', 14), (4, '0xe '))
         self.assertEqual(self._format('%#-4x', 16), (4, '0x10'))
         self.assertEqual(self._format('%#-4x', 0xdeadbeef), (10, '0xdeadbeef'))
-        self.assertEqual(self._format('%#-12x', 0xdeadbeef), (12, '0xdeadbeef  '))
+        self.assertEqual(self._format('%#-12x', 0xdeadbeef),
+                         (12, '0xdeadbeef  '))
         self.assertEqual(self._format('%#-4X', 14), (4, '0XE '))
         self.assertEqual(self._format('%#-4X', 16), (4, '0X10'))
         self.assertEqual(self._format('%#-4X', 0xdeadbeef), (10, '0XDEADBEEF'))
-        self.assertEqual(self._format('%#-12X', 0xdeadbeef), (12, '0XDEADBEEF  '))
+        self.assertEqual(self._format('%#-12X', 0xdeadbeef),
+                         (12, '0XDEADBEEF  '))
 
     def test_format_hex_width_zero(self):
         self.assertEqual(self._format('%04x', 0), (4, '0000'))
         self.assertEqual(self._format('%04x', 14), (4, '000e'))
         self.assertEqual(self._format('%04x', 16), (4, '0010'))
         self.assertEqual(self._format('%04x', 0xdeadbeef), (8, 'deadbeef'))
-        self.assertEqual(self._format('%012x', 0xdeadbeef), (12, '0000deadbeef'))
+        self.assertEqual(self._format('%012x', 0xdeadbeef),
+                         (12, '0000deadbeef'))
         self.assertEqual(self._format('%#04x', 0), (4, '0000'))
         self.assertEqual(self._format('%#04x', 14), (4, '0x0e'))
         self.assertEqual(self._format('%#04x', 16), (4, '0x10'))
         self.assertEqual(self._format('%#04x', 0xdeadbeef), (10, '0xdeadbeef'))
-        self.assertEqual(self._format('%#012x', 0xdeadbeef), (12, '0x00deadbeef'))
+        self.assertEqual(self._format('%#012x', 0xdeadbeef),
+                         (12, '0x00deadbeef'))
         self.assertEqual(self._format('%#04X', 14), (4, '0X0E'))
         self.assertEqual(self._format('%#04X', 16), (4, '0X10'))
         self.assertEqual(self._format('%#04X', 0xdeadbeef), (10, '0XDEADBEEF'))
-        self.assertEqual(self._format('%#012X', 0xdeadbeef), (12, '0X00DEADBEEF'))
+        self.assertEqual(self._format('%#012X', 0xdeadbeef),
+                         (12, '0X00DEADBEEF'))
 
     def test_format_pointer(self):
         self.assertEqual(self._format('%p', ctypes.c_void_p(0)), (1, '0'))
@@ -555,6 +564,17 @@ class SnprintfTest(RlibcTest):
 
     def test_format_percent(self):
         self.assertEqual(self._format('loading: 10%%!'), (13, 'loading: 10%!'))
+
+    def test_invalid_format_sequence(self):
+        with self.assertErrno(22):
+            self.assertEqual(self._format('%')[0], -1)
+        with self.assertErrno(22):
+            self.assertEqual(self._format('%0')[0], -1)
+        with self.assertErrno(22):
+            self.assertEqual(self._format('%%%.')[0], -1)
+        with self.assertErrno(22):
+            self.assertEqual(
+                self._format('foo: %#08.4ll bar: %#08.4llx')[0], -1)
 
 
 if __name__ == '__main__':
