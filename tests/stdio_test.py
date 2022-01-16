@@ -322,12 +322,12 @@ class SnprintfTest(RlibcTest):
                          (1024, '00123456' + ' ' * 1016))
 
     def test_format_unsigned_width_zero(self):
-        self.assertEqual(self._format('%02d', 4), (2, '04'))
-        self.assertEqual(self._format('%06d', 11), (6, '000011'))
-        self.assertEqual(self._format('%08.d', 42), (8, '00000042'))
-        self.assertEqual(self._format('%08.8d', 42), (8, '00000042'))
-        self.assertEqual(self._format('%08.10d', 42), (10, '0000000042'))
-        self.assertEqual(self._format('%01024.8d', 123456, bufsize=2048),
+        self.assertEqual(self._format('%02u', 4), (2, '04'))
+        self.assertEqual(self._format('%06u', 11), (6, '000011'))
+        self.assertEqual(self._format('%08.u', 42), (8, '00000042'))
+        self.assertEqual(self._format('%08.8u', 42), (8, '00000042'))
+        self.assertEqual(self._format('%08.10u', 42), (10, '0000000042'))
+        self.assertEqual(self._format('%01024.8u', 123456, bufsize=2048),
                          (1024, '0' * 1016 + '00123456'))
 
     def test_format_octal(self):
