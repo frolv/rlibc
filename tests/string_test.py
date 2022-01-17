@@ -181,6 +181,9 @@ class StrlenTest(RlibcTest):
     def test_empty(self):
         self.assertEqual(self._rlibc.strlen(b''), 0)
 
+    def test_null(self):
+        self.assertEqual(self._rlibc.strlen(ctypes.c_char_p(0)), 0)
+
 
 class StrnlenTest(RlibcTest):
     """Tests the strnlen() function."""
@@ -208,6 +211,9 @@ class StrnlenTest(RlibcTest):
     def test_zero_limit(self):
         self.assertEqual(self._rlibc.strnlen(b'a string', 0), 0)
         self.assertEqual(self._rlibc.strnlen(b'', 0), 0)
+
+    def test_null(self):
+        self.assertEqual(self._rlibc.strnlen(ctypes.c_char_p(0), 128), 0)
 
 
 class StrrevTest(RlibcTest):

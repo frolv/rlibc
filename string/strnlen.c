@@ -8,6 +8,10 @@
 size_t strnlen(const char *s, size_t maxlen)
 {
     size_t len = 0;
+    if (s == NULL) {
+        return len;
+    }
+
     while (maxlen > 0 && *s) {
         ++len;
         ++s;
