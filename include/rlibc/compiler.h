@@ -11,9 +11,12 @@
 #define __rc_printf(format_index, arg_index) \
     __attribute__((format(printf, format_index, arg_index)))
 
+#define __rc_section(section_name) __attribute__((section(section_name)))
+
 #else  // defined(__GNUC__) || defined(__clang__)
 
 #define __rc_printf(format_index, arg_index)
+#define __rc_section(section_name)
 
 #endif  // defined(__GNUC__) || defined(__clang__)
 

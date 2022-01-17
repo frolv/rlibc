@@ -566,13 +566,13 @@ class SnprintfTest(RlibcTest):
         self.assertEqual(self._format('loading: 10%%!'), (13, 'loading: 10%!'))
 
     def test_invalid_format_sequence(self):
-        with self.assertErrno(22):
+        with self.assertErrno(self.errno.EINVAL):
             self.assertEqual(self._format('%')[0], -1)
-        with self.assertErrno(22):
+        with self.assertErrno(self.errno.EINVAL):
             self.assertEqual(self._format('%0')[0], -1)
-        with self.assertErrno(22):
+        with self.assertErrno(self.errno.EINVAL):
             self.assertEqual(self._format('%%%.')[0], -1)
-        with self.assertErrno(22):
+        with self.assertErrno(self.errno.EINVAL):
             self.assertEqual(
                 self._format('foo: %#08.4ll bar: %#08.4llx')[0], -1)
 

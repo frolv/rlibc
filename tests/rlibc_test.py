@@ -10,6 +10,14 @@ import subprocess
 import unittest
 
 
+class _ErrnoDescriptor(ctypes.Structure):
+    _fields_ = [('value', ctypes.c_int), ('name', ctypes.c_char_p),
+                ('description', ctypes.c_char_p)]
+
+    def __repr__(self):
+        return f'{self.name.decode("utf-8")}({self.value})'
+
+
 class RlibcTest(unittest.TestCase):
     """Base class for rlibc test cases"""
 
@@ -27,6 +35,26 @@ class RlibcTest(unittest.TestCase):
             raise RuntimeError('No rlibc library found at %s' % lib)
 
         cls._rlibc = ctypes.cdll.LoadLibrary(lib)
+        cls.errno = cls._ErrnoValues(cls._rlibc)
+
+    class _ErrnoValues:
+        """Parses rlibc's errno descriptor table and stores its values."""
+
+        def __init__(self, rlibc):
+            table_size = ctypes.c_int.in_dll(
+                rlibc, '__rlibc_errno_descriptors_size').value
+            table = (_ErrnoDescriptor * table_size).in_dll(
+                rlibc, '__rlibc_errno_descriptors')
+
+            self._errno_by_name = {
+                desc.name.decode('utf-8'): desc
+                for desc in table
+            }
+
+        def __getattr__(self, attr: str) -> int:
+            if attr in self._errno_by_name:
+                return self._errno_by_name[attr].value
+            raise KeyError(f'No such errno: {attr}')
 
     class _ErrnoContext:
         """Asserts that errno is set to a value following an operation."""

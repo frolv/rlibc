@@ -166,6 +166,23 @@ class StrncmpTest(RlibcTest):
                          ['Eve', 'Dave', 'Carol', 'Bob', 'Bob', 'Alice'])
 
 
+class StrerrorTest(RlibcTest):
+    """Tests the strerror() function."""
+
+    def setUp(self):
+        self._rlibc.strerror.restype = ctypes.c_char_p
+
+    def test_success(self):
+        self.assertEqual(self._rlibc.strerror(0), b'Success')
+
+    def test_valid(self):
+        self.assertEqual(self._rlibc.strerror(self.errno.ENOMEM),
+                         b'Out of memory')
+
+    def test_invalid(self):
+        self.assertEqual(self._rlibc.strerror(1000), b'Unknown error')
+
+
 class StrlenTest(RlibcTest):
     """Tests the strlen() function."""
 

@@ -25,6 +25,8 @@ size_t strnlen(const char *s, size_t maxlen);
 
 char *strrev(char *s);
 
+char *strerror(int errnum);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
