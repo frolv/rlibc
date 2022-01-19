@@ -20,6 +20,10 @@ int memcmp(const void *s1, const void *s2, size_t n);
 int strcmp(const char *s1, const char *s2);
 int strncmp(const char *s1, const char *s2, size_t n);
 
+char *strcpy(char *__restrict dst, const char *__restrict src);
+char *strncpy(char *__restrict dst, const char *__restrict src, size_t n);
+size_t strlcpy(char *__restrict dst, const char *__restrict src, size_t n);
+
 size_t strlen(const char *s);
 size_t strnlen(const char *s, size_t maxlen);
 

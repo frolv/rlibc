@@ -166,6 +166,124 @@ class StrncmpTest(RlibcTest):
                          ['Eve', 'Dave', 'Carol', 'Bob', 'Bob', 'Alice'])
 
 
+class StrcpyTest(RlibcTest):
+    """Tests the strcpy() function."""
+
+    def setUp(self):
+        self._rlibc.strcpy.restype = ctypes.c_char_p
+
+    def test_empty(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strcpy(buf, b''), b'')
+        self.assertEqual(buf.value, b'')
+        self.assertEqual(buf.raw, b'\0unk\0')
+
+    def test_short(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strcpy(buf, b'!'), b'!')
+        self.assertEqual(buf.value, b'!')
+        self.assertEqual(buf.raw, b'!\0nk\0')
+
+    def test_long(self):
+        buf = ctypes.create_string_buffer(b'a' * 2047)
+        self.assertEqual(self._rlibc.strcpy(buf, b'0' * 2047), b'0' * 2047)
+        self.assertEqual(buf.value, b'0' * 2047)
+        self.assertEqual(buf.raw, b'0' * 2047 + b'\0')
+
+
+class StrncpyTest(RlibcTest):
+    """Tests the strncpy() function."""
+
+    def setUp(self):
+        self._rlibc.strncpy.restype = ctypes.c_char_p
+
+    def test_empty(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strncpy(buf, b'', len(buf)), b'')
+        self.assertEqual(buf.value, b'')
+        self.assertEqual(buf.raw, b'\0\0\0\0\0')
+
+    def test_zero(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strncpy(buf, b'test', 0), b'junk')
+        self.assertEqual(buf.value, b'junk')
+        self.assertEqual(buf.raw, b'junk\0')
+
+    def test_full_copy(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strncpy(buf, b'te', len(buf)), b'te')
+        self.assertEqual(buf.value, b'te')
+        self.assertEqual(buf.raw, b'te\0\0\0')
+
+    def test_unsafe_limited_copy(self):
+        buf = ctypes.create_string_buffer(b'junk')
+        self.assertEqual(self._rlibc.strncpy(buf, b'test', 3), b'tesk')
+        self.assertEqual(buf.value, b'tesk')
+        self.assertEqual(buf.raw, b'tesk\0')  # No NUL written after byte 2
+
+    def test_unsafe_exact_size(self):
+        buf = ctypes.create_string_buffer(b'junk', 4)
+        self.assertEqual(self._rlibc.strncpy(buf, b'test', len(buf)), b'test')
+        self.assertEqual(buf.raw, b'test')  # Not terminated
+
+    def test_unsafe_too_large(self):
+        buf = ctypes.create_string_buffer(b'junk', 4)
+        self.assertEqual(self._rlibc.strncpy(buf, b'some data', len(buf)),
+                         b'some')
+        self.assertEqual(buf.raw, b'some')  # Not terminated
+
+
+class StrlcpyTest(RlibcTest):
+    """Tests the strlcpy() function."""
+
+    def setUp(self):
+        self._rlibc.strlcpy.restype = ctypes.c_size_t
+
+    def test_empty(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'', len(buf)), 0)
+        self.assertEqual(buf.value, b'')
+        self.assertEqual(buf.raw, b'\0tring buffer\0')
+
+    def test_zero(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'copy', 0), 4)
+        self.assertEqual(buf.value, b'string buffer')
+        self.assertEqual(buf.raw, b'string buffer\0')
+
+    def test_size_one(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'copy', 1), 4)
+        self.assertEqual(buf.value, b'')
+        self.assertEqual(buf.raw, b'\0tring buffer\0')
+
+    def test_full_copy(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'copy', len(buf)), 4)
+        self.assertEqual(buf.value, b'copy')
+        self.assertEqual(buf.raw, b'copy\0g buffer\0')
+
+    def test_limited_copy(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'some data', 6), 9)
+        self.assertEqual(buf.value, b'some ')
+        self.assertEqual(buf.raw, b'some \0 buffer\0')
+
+    def test_exact_size(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(self._rlibc.strlcpy(buf, b'buffer string', len(buf)),
+                         13)
+        self.assertEqual(buf.value, b'buffer string')
+        self.assertEqual(buf.raw, b'buffer string\0')
+
+    def test_too_large(self):
+        buf = ctypes.create_string_buffer(b'string buffer')
+        self.assertEqual(
+            self._rlibc.strlcpy(buf, b'copy this data please', len(buf)), 21)
+        self.assertEqual(buf.value, b'copy this dat')
+        self.assertEqual(buf.raw, b'copy this dat\0')
+
+
 class StrerrorTest(RlibcTest):
     """Tests the strerror() function."""
 
