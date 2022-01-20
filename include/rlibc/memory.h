@@ -68,6 +68,18 @@ extern "C" {
 #error Target must implement __rc_set_bytes.
 #endif  // __RLIBC_HAS_SET_BYTES
 
+// const uint8_t *__rc_scan_byte(const uint8_t *ptr, uint8_t c, size_t n);
+//
+// Searches for the first occurrence of the byte c within the first n bytes
+// following ptr. If found, returns a pointer to that byte. Otherwise, returns
+// NULL.
+//
+// A generic implementation can be pulled from <rlibc/memory_generic.h> by
+// defining the macro __RLIBC_GENERIC_SCAN_BYTE.
+#ifndef __RLIBC_HAS_SCAN_BYTE
+#error Target must implement __rc_scan_byte.
+#endif  // __RLIBC_HAS_SCAN_BYTE
+
 //
 // Generic non-target definitions.
 //

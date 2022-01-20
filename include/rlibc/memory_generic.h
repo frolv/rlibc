@@ -50,6 +50,24 @@ static inline void __rc_set_bytes(uint8_t *dst, uint8_t c, size_t n)
 
 #endif  // defined(__RLIBC_GENERIC_SET_BYTES)
 
+#if defined(__RLIBC_GENERIC_SCAN_BYTE)
+#define __RLIBC_HAS_SCAN_BYTE 1
+
+// Finds the first occurrence of c within n bytes of ptr, if any.
+static inline const uint8_t *__rc_scan_byte(const uint8_t *ptr,
+                                            uint8_t c,
+                                            size_t n)
+{
+    for (size_t i = 0; i < n; ++i) {
+        if (ptr[i] == c) {
+            return ptr + i;
+        }
+    }
+    return NULL;
+}
+
+#endif  // defined(__RLIBC_GENERIC_SCAN_BYTE)
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

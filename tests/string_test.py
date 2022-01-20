@@ -12,6 +12,37 @@ import unittest
 from rlibc_test import RlibcTest
 
 
+class MemchrTest(RlibcTest):
+    """Tests the memchr() function."""
+
+    Buffer = ctypes.c_byte * 8
+
+    def setUp(self):
+        self._rlibc.memchr.restype = ctypes.c_void_p
+
+    def test_found(self):
+        buf = MemchrTest.Buffer(0x03, 0x84, 0xf0, 0x00, 0x77, 0x10, 0xff, 0x00)
+        self.assertEqual(self._rlibc.memchr(buf, 0x77, len(buf)),
+                         ctypes.addressof(buf) + 4)
+        self.assertEqual(self._rlibc.memchr(buf, 0x03, len(buf)),
+                         ctypes.addressof(buf) + 0)
+        self.assertEqual(self._rlibc.memchr(buf, 0x00, len(buf)),
+                         ctypes.addressof(buf) + 3)
+        self.assertEqual(self._rlibc.memchr(buf, 0xff, len(buf)),
+                         ctypes.addressof(buf) + 6)
+
+    def test_not_found(self):
+        buf = MemchrTest.Buffer(0x03, 0x84, 0xf0, 0x00, 0x77, 0x10, 0xff, 0x00)
+        self.assertEqual(self._rlibc.memchr(buf, 0xee, len(buf)), None)
+        self.assertEqual(self._rlibc.memchr(buf, 0x01, len(buf)), None)
+        self.assertEqual(self._rlibc.memchr(buf, 0xff, 4), None)
+
+    def test_zero_length(self):
+        buf = MemchrTest.Buffer(0x03, 0x84, 0xf0, 0x00, 0x77, 0x10, 0xff, 0x00)
+        self.assertEqual(self._rlibc.memchr(buf, 0xf0, 0), None)
+        self.assertEqual(self._rlibc.memchr(buf, 0x22, 0), None)
+
+
 class MemcmpTest(RlibcTest):
     """Tests the memcmp() function."""
 

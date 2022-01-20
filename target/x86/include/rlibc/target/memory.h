@@ -10,6 +10,7 @@
 
 #define __RLIBC_GENERIC_COPY_BYTES_FWD
 #define __RLIBC_GENERIC_SET_BYTES
+#define __RLIBC_GENERIC_SCAN_BYTE
 #include <rlibc/memory_generic.h>
 
 #endif  // RLIBC_RLIBC_TARGET_MEMORY_H
