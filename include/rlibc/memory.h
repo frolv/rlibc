@@ -58,6 +58,18 @@ extern "C" {
 #error Target must implement __rc_copy_bytes_fwd.
 #endif  // __RLIBC_HAS_COPY_BYTES_FWD
 
+// void __rc_copy_bytes_bwd(uint8_t *dst, const uint8_t *src, size_t n);
+//
+// Copies n bytes from src to dst in descending order (i.e. from src[n - 1] to
+// src[0]). There are no guarantees about alignment, and the src and dst
+// regions may overlap.
+//
+// A generic implementation can be pulled from <rlibc/memory_generic.h> by
+// defining the macro __RLIBC_GENERIC_COPY_BYTES_BWD.
+#ifndef __RLIBC_HAS_COPY_BYTES_BWD
+#error Target must implement __rc_copy_bytes_bwd.
+#endif  // __RLIBC_HAS_COPY_BYTES_BWD
+
 // void __rc_set_bytes(uint8_t *dst, uint8_t c, size_t n);
 //
 // Sets n bytes starting from dst to the value c.

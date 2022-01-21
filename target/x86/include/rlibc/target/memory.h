@@ -8,7 +8,11 @@
 
 #define __RLIBC_WORDSIZE 32
 
+// The compiler optimizes byte copying operations well on x86, so there's no
+// need to override them.
 #define __RLIBC_GENERIC_COPY_BYTES_FWD
+#define __RLIBC_GENERIC_COPY_BYTES_BWD
+
 #define __RLIBC_GENERIC_SET_BYTES
 #define __RLIBC_GENERIC_SCAN_BYTE
 #include <rlibc/memory_generic.h>

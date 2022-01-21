@@ -102,6 +102,53 @@ class MemcpyTest(RlibcTest):
         self.assertEqual(dst.value, src.value)
 
 
+class Memmove(RlibcTest):
+    """Tests the memmove() function."""
+
+    def setUp(self):
+        self._buffer = (ctypes.c_byte * 256)(*range(0, 256))
+        self._initial = [val for val in self._buffer]
+
+    def test_no_overlap_above(self):
+        source = ctypes.c_void_p(ctypes.addressof(self._buffer) + 128)
+        self._rlibc.memmove(self._buffer, source, 64)
+        result = [val for val in self._buffer]
+        self.assertEqual(result, self._initial[128:192] + self._initial[64:])
+
+    def test_no_overlap_below(self):
+        dest = ctypes.c_void_p(ctypes.addressof(self._buffer) + 128)
+        self._rlibc.memmove(dest, self._buffer, 64)
+        result = [val for val in self._buffer]
+        self.assertEqual(
+            result,
+            self._initial[:128] + self._initial[:64] + self._initial[192:])
+
+    def test_overlap_above(self):
+        source = ctypes.c_void_p(ctypes.addressof(self._buffer) + 32)
+        self._rlibc.memmove(self._buffer, source, 64)
+        result = [val for val in self._buffer]
+        self.assertEqual(result, self._initial[32:96] + self._initial[64:])
+
+    def test_overlap_below(self):
+        dest = ctypes.c_void_p(ctypes.addressof(self._buffer) + 32)
+        self._rlibc.memmove(dest, self._buffer, 64)
+        result = [val for val in self._buffer]
+        self.assertEqual(
+            result,
+            self._initial[:32] + self._initial[:64] + self._initial[96:])
+
+    def test_same_pointer(self):
+        self._rlibc.memmove(self._buffer, self._buffer, len(self._buffer))
+        result = [val for val in self._buffer]
+        self.assertEqual(result, self._initial)
+
+    def test_zero_length(self):
+        source = ctypes.c_void_p(ctypes.addressof(self._buffer) + 128)
+        self._rlibc.memmove(self._buffer, source, 0)
+        result = [val for val in self._buffer]
+        self.assertEqual(result, self._initial)
+
+
 class MemsetTest(RlibcTest):
     """Tests the memset() function."""
 

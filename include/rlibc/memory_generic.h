@@ -36,6 +36,22 @@ static inline void __rc_copy_bytes_fwd(uint8_t *dst,
 
 #endif  // defined(__RLIBC_GENERIC_COPY_BYTES_FWD)
 
+#if defined(__RLIBC_GENERIC_COPY_BYTES_BWD)
+#define __RLIBC_HAS_COPY_BYTES_BWD 1
+
+// Copies n bytes from src to dst in descending order.
+static inline void __rc_copy_bytes_bwd(uint8_t *dst,
+                                       const uint8_t *src,
+                                       size_t n)
+{
+    while (n > 0) {
+        dst[n - 1] = src[n - 1];
+        --n;
+    }
+}
+
+#endif  // defined(__RLIBC_GENERIC_COPY_BYTES_BWD)
+
 #if defined(__RLIBC_GENERIC_SET_BYTES)
 #define __RLIBC_HAS_SET_BYTES 1
 
