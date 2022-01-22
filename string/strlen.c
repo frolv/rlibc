@@ -3,17 +3,15 @@
 // Use of this source code is governed by an MIT-style license
 // that can be found in the LICENSE file in the repository root.
 
+#include <rlibc/memory.h>
+
+#include <stdint.h>
 #include <string.h>
 
 size_t strlen(const char *s)
 {
-    size_t len = 0;
     if (s == NULL) {
-        return len;
+        return 0;
     }
-
-    while (*s++) {
-        ++len;
-    }
-    return len;
+    return (const char *)__rc_scan_byte((const uint8_t *)s, '\0', SIZE_MAX) - s;
 }
