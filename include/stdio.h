@@ -19,6 +19,7 @@ extern "C" {
 #define EOF (-1)
 
 typedef struct rlibc_file {
+    size_t (*write)(struct rlibc_file *, const char *, size_t);
 } FILE;
 
 extern FILE *const stdout;

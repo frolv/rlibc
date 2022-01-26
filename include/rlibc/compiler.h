@@ -13,10 +13,13 @@
 
 #define __rc_section(section_name) __attribute__((section(section_name)))
 
+#define __rc_unused __attribute__((unused))
+
 #else  // defined(__GNUC__) || defined(__clang__)
 
 #define __rc_printf(format_index, arg_index)
 #define __rc_section(section_name)
+#define __rc_unused
 
 #endif  // defined(__GNUC__) || defined(__clang__)
 
