@@ -30,6 +30,8 @@ size_t strlcpy(char *__restrict dst, const char *__restrict src, size_t n);
 size_t strlen(const char *s);
 size_t strnlen(const char *s, size_t maxlen);
 
+char *strdup(const char *s);
+
 char *strrev(char *s);
 
 char *strerror(int errnum);
