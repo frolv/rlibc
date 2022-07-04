@@ -6,6 +6,8 @@
 #ifndef RLIBC_STDLIB_H
 #define RLIBC_STDLIB_H
 
+#include <rlibc/compiler.h>
+
 #include <rlibc.h>
 #include <stddef.h>
 
@@ -32,5 +34,14 @@ static inline void free(void *ptr) { return kfree(ptr); }
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
+
+// These function prototypes are required to build gcc, but are yet
+// unimplemented.
+__rc_noreturn void exit(int status);
+__rc_noreturn void abort(void);
+int abs(int j);
+int atoi(const char *nptr);
+void *calloc(size_t nmemb, size_t size);
+char *getenv(const char *name);
 
 #endif  // RLIBC_STDLIB_H

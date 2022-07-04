@@ -13,7 +13,8 @@
 
 #define __rc_section(section_name) __attribute__((section(section_name)))
 
-#define __rc_unused __attribute__((unused))
+#define __rc_noreturn __attribute__((noreturn))
+#define __rc_unused   __attribute__((unused))
 
 #else  // defined(__GNUC__) || defined(__clang__)
 

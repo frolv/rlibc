@@ -18,11 +18,16 @@ extern "C" {
 
 #define EOF (-1)
 
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+
 typedef struct rlibc_file {
     size_t (*write)(struct rlibc_file *, const char *, size_t);
 } FILE;
 
 extern FILE *const stdout;
+extern FILE *const stderr;
 
 int printf(const char *__restrict format, ...) __rc_printf(1, 2);
 int fprintf(FILE *stream, const char *__restrict format, ...) __rc_printf(2, 3);
@@ -42,6 +47,21 @@ int vsnprintf(char *__restrict str,
               size_t size,
               const char *__restrict format,
               va_list ap) __rc_printf(3, 0);
+
+// These function prototypes are required to build gcc, but are yet
+// unimplemented.
+FILE *fopen(const char *__restrict pathname, const char *__restrict mode);
+int fclose(FILE *stream);
+size_t fread(void *__restrict ptr,
+             size_t size,
+             size_t nmemb,
+             FILE *__restrict stream);
+size_t fwrite(const void *__restrict ptr,
+              size_t size,
+              size_t nmemb,
+              FILE *__restrict stream);
+int fseek(FILE *stream, long offset, int whence);
+long ftell(FILE *stream);
 
 #ifdef __cplusplus
 }

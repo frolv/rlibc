@@ -36,6 +36,11 @@ char *strrev(char *s);
 
 char *strerror(int errnum);
 
+// These function prototypes are required to build gcc, but are yet
+// unimplemented.
+char *strchr(const char *s, int c);
+char *strcat(char *__restrict dst, const char *__restrict src);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
