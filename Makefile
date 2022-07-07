@@ -6,7 +6,7 @@
 TARGET ?= x86
 
 ifeq ($(TARGET), x86)
-	TOOLCHAIN_PREFIX := i686-elf
+	TOOLCHAIN_PREFIX := i686-radix
 endif
 
 CC := $(TOOLCHAIN_PREFIX)-gcc
@@ -20,7 +20,8 @@ RM := rm -f
 
 BUILD_DIR := build
 INCLUDE_DIR := include
-TARGET_INCLUDE_DIR := target/$(TARGET)/include
+TARGET_DIR := target/$(TARGET)
+TARGET_INCLUDE_DIR := $(TARGET_DIR)/include
 
 OPT_LEVEL ?= -O2
 
@@ -31,6 +32,8 @@ CFLAGS := $(_FLAGS) -std=c11 -Wstrict-prototypes
 
 RADIX_FLAGS ?=
 LIBK_FLAGS := -D__radix_kernel__ $(RADIX_FLAGS)
+
+PREFIX ?=
 
 # Source directories for libc.
 LIBC_DIRS := ctype errno stdio string
@@ -49,7 +52,10 @@ TEST_LDFLAGS := -shared -Bsymbolic -z nodefaultlib
 # The final binary files to produce.
 BINS := libc.a
 
+STARTFILES := crti.o crtn.o crt0.o
+
 BINS := $(addprefix $(BUILD_DIR)/,$(BINS))
+STARTFILES := $(addprefix $(BUILD_DIR)/,$(STARTFILES))
 
 all: build-libs
 
@@ -69,7 +75,7 @@ test-lib: build-dirs
 	@$(MAKE) --no-print-directory $(TEST_BIN)
 
 .PHONY: libs
-libs: $(BINS)
+libs: $(BINS) $(STARTFILES)
 
 .PHONY: libk
 libk: $(LIBK_BIN)
@@ -77,8 +83,26 @@ libk: $(LIBK_BIN)
 .PHONY: build-dirs
 build-dirs: $(BUILD_DIR) $(LIBC_BUILD_DIRS)
 
+.PHONY: install
+install: build-libs
+	mkdir -p $(PREFIX)/include
+	mkdir -p $(PREFIX)/lib
+	cp -RT $(INCLUDE_DIR) $(PREFIX)/include
+	cp -RT $(TARGET_INCLUDE_DIR) $(PREFIX)/include
+	cp $(BINS) $(PREFIX)/lib
+	cp $(STARTFILES) $(PREFIX)/lib
+
 $(BUILD_DIR)/libc.a: $(LIBC_OBJS)
 	$(AR) rcs $@ $^
+
+$(BUILD_DIR)/crti.o: $(TARGET_DIR)/crti.S
+	$(CC) -c $< -o $@ $(ASFLAGS)
+
+$(BUILD_DIR)/crtn.o: $(TARGET_DIR)/crtn.S
+	$(CC) -c $< -o $@ $(ASFLAGS)
+
+$(BUILD_DIR)/crt0.o: $(TARGET_DIR)/crt0.S
+	$(CC) -c $< -o $@ $(ASFLAGS)
 
 $(LIBK_BIN): $(LIBK_OBJS)
 	$(AR) rcs $@ $^
@@ -104,6 +128,7 @@ $(BUILD_DIR)/%.test.o: %.c
 clean-libs:
 	$(RM) $(LIBC_OBJS)
 	$(RM) $(BINS)
+	$(RM) $(STARTFILES)
 
 clean-libk:
 	$(RM) $(LIBK_OBJS)
