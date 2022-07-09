@@ -22,7 +22,7 @@ struct errno_descriptor {
 
 // Store the names, values, and descriptions of every errno constant in a table
 // which can be read by external programs.
-__rc_section(".rlibc_errno_table") const
+__RC_SECTION(".rlibc_errno_table") const
     struct errno_descriptor __rlibc_errno_descriptors[ERRNO_MAX + 1] = {
         {0, "OK", "Success"},
         ERRNO_DESC(EPERM, "Operation not permitted"),

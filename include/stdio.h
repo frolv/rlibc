@@ -29,24 +29,24 @@ typedef struct rlibc_file {
 extern FILE *const stdout;
 extern FILE *const stderr;
 
-int printf(const char *__restrict format, ...) __rc_printf(1, 2);
-int fprintf(FILE *stream, const char *__restrict format, ...) __rc_printf(2, 3);
+int printf(const char *__restrict format, ...) __RC_PRINTF(1, 2);
+int fprintf(FILE *stream, const char *__restrict format, ...) __RC_PRINTF(2, 3);
 int sprintf(char *__restrict str, const char *__restrict format, ...)
-    __rc_printf(2, 3);
+    __RC_PRINTF(2, 3);
 int snprintf(char *__restrict str,
              size_t size,
              const char *__restrict format,
-             ...) __rc_printf(3, 4);
+             ...) __RC_PRINTF(3, 4);
 
-int vprintf(const char *__restrict format, va_list ap) __rc_printf(1, 0);
+int vprintf(const char *__restrict format, va_list ap) __RC_PRINTF(1, 0);
 int vfprintf(FILE *stream, const char *__restrict format, va_list ap)
-    __rc_printf(2, 0);
+    __RC_PRINTF(2, 0);
 int vsprintf(char *__restrict str, const char *__restrict format, va_list ap)
-    __rc_printf(2, 0);
+    __RC_PRINTF(2, 0);
 int vsnprintf(char *__restrict str,
               size_t size,
               const char *__restrict format,
-              va_list ap) __rc_printf(3, 0);
+              va_list ap) __RC_PRINTF(3, 0);
 
 // These function prototypes are required to build gcc, but are yet
 // unimplemented.

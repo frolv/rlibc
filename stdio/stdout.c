@@ -11,7 +11,7 @@
 
 #include <radix/tty.h>
 
-static size_t stdout_write(__rc_unused FILE *stream,
+static size_t stdout_write(__RC_UNUSED FILE *stream,
                            const char *data,
                            size_t size)
 {
@@ -21,9 +21,9 @@ static size_t stdout_write(__rc_unused FILE *stream,
 
 #else  // defined(__radix_kernel__)
 
-static size_t stdout_write(__rc_unused FILE *stream,
-                           __rc_unused const char *data,
-                           __rc_unused size_t size)
+static size_t stdout_write(__RC_UNUSED FILE *stream,
+                           __RC_UNUSED const char *data,
+                           __RC_UNUSED size_t size)
 {
     // TODO(frolv): Implement userspace write.
     return 0;

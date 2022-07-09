@@ -37,8 +37,8 @@ static inline void free(void *ptr) { return kfree(ptr); }
 
 // These function prototypes are required to build gcc, but are yet
 // unimplemented.
-__rc_noreturn void exit(int status);
-__rc_noreturn void abort(void);
+__RC_NORETURN void exit(int status);
+__RC_NORETURN void abort(void);
 int abs(int j);
 int atoi(const char *nptr);
 void *calloc(size_t nmemb, size_t size);
