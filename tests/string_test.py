@@ -377,6 +377,7 @@ class StrerrorTest(RlibcTest):
 
     def test_invalid(self):
         self.assertEqual(self._rlibc.strerror(1000), b'Unknown error')
+        self.assertEqual(self._rlibc.strerror(-3), b'Unknown error')
 
 
 class StrlenTest(RlibcTest):

@@ -62,7 +62,7 @@ const size_t __rlibc_errno_descriptors_size =
 
 char *strerror(int errnum)
 {
-    if (errnum > ERRNO_MAX) {
+    if (errnum < 0 || errnum > ERRNO_MAX) {
         return "Unknown error";
     }
 
